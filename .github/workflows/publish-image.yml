@@ -6,6 +6,13 @@ on:
       - main
     tags:
       - 'v*.*.*'
+    paths:
+      - '1-tampermonkey-cookie-grabber/**'
+      - '2-relay-client-gateway/**'
+      - '3-waa-proof-server/**'
+      - 'Dockerfile'
+      - '.dockerignore'
+      - '.github/workflows/publish-image.yml'
   pull_request:
   workflow_dispatch:
 

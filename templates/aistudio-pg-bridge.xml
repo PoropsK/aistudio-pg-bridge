@@ -12,7 +12,7 @@
   <TemplateURL>https://raw.githubusercontent.com/PoropsK/aistudio-pg-bridge/main/templates/aistudio-pg-bridge.xml</TemplateURL>
   <Overview>OpenAI and Gemini compatible AI Studio relay gateway with a local proof server.</Overview>
   <Description>
-    The relay gateway and proof server run in one container. Cookie files and the mint ledger are stored in appdata. Only the relay port is published. Add this repository URL to Unraid Docker Repositories.
+    Optional prefilled form for the direct Unraid Docker Add Container flow. The relay gateway and proof server run in one container. Cookie files and the mint ledger are stored in appdata. Only the relay port is published.
   </Description>
   <Category>Network:Web</Category>
   <WebUI>http://[IP]:[PORT:18802]/</WebUI>

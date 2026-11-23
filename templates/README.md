@@ -1,6 +1,6 @@
 # Unraid Template
 
-這個 Template 已設定為 `PoropsK` fork。提交到 `main` 後，Unraid 可直接從你的 Template Repository 載入。
+這個 Template 是可選的預填表單，已設定為 `PoropsK` fork。你也可以完全不加入 Template Repository，直接在 Unraid Docker → Add Container 手動填寫 Repository、Port、Path 和 Variable。
 
 Template 會拉取：
 
