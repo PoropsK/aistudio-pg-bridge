@@ -117,3 +117,126 @@ ai.example.com {
 ## 6. XML Template 的位置
 
 `templates/aistudio-pg-bridge.xml` 可以讓 Unraid 預填上述欄位。使用它需要把 GitHub repository 加入 Docker Repositories。這是捷徑，不是必要依賴。直接 Add Container 手動輸入時，容器啟動與更新方式相同。
+
+## 7. XML Template 詳細使用教學
+
+### 7.1 XML 在這裡做什麼
+
+XML Template 是 Unraid Docker WebGUI 的表單描述檔。它會預先填入：
+
+- Docker image Repository
+- Registry
+- Network Type
+- WebUI 連結
+- Host Port 和 Container Port
+- Host Path 和 Container Path
+- Environment Variables
+- Extra Parameters
+
+按 Apply 之後，Unraid 仍然建立一般 Docker container，並把最後使用的設定保存到自己的 Docker template。日後你可以在 Docker 頁面按容器圖示，再使用 Edit、Logs、Restart、Update。
+
+### 7.2 使用 GitHub Template Repository 加入 XML
+
+這是最方便的 XML 使用方式：
+
+1. 登入 Unraid WebGUI。
+2. 開啟 **Apps**。
+3. 找到 **Docker Repositories** 或 Template repositories 設定。
+4. 新增：
+
+   ```text
+   https://github.com/PoropsK/aistudio-pg-bridge
+   ```
+
+5. 儲存並重新整理。
+6. 開啟 **Docker → Add Container**。
+7. 在 Template 下拉選單選擇 **AI Studio PG Bridge**。
+
+Unraid 會從 repository 的 `templates/aistudio-pg-bridge.xml` 載入預填欄位。Template 內的 image 已經指向：
+
+```text
+ghcr.io/poropsk/aistudio-pg-bridge:latest
+```
+
+### 7.3 套用前要檢查的欄位
+
+開啟 Template 後，建議切換 **Advanced View**，逐項確認：
+
+| 欄位 | 應有的值 | 用途 |
+|---|---|---|
+| Repository | `ghcr.io/poropsk/aistudio-pg-bridge:latest` | 要拉取的容器 image |
+| Network Type | `bridge` | 一般 Docker bridge 網路 |
+| Relay Web/API port | Host `18802` → Container `18802`, TCP | 面板、OpenAI API、Gemini API |
+| Cookie data | `/mnt/user/appdata/aistudio-pg-bridge/cookies` → `/app/2-relay-client-gateway/cookies` | 保存 Cookie 帳號檔 |
+| Mint ledger data | `/mnt/user/appdata/aistudio-pg-bridge/data` → `/app/3-waa-proof-server/data` | 保存 mint ledger |
+| Relay host | `0.0.0.0` | 允許 Docker port mapping 連入 |
+| Relay API key | 自己產生的值 | 面板登入和 API 驗證 |
+| Default model | `gemini-3.8-flash` | 沒指定 model 時使用 |
+| Auto start proof server | `1` | 啟動 Relay 時一併啟動 Proof Server |
+| Proof host | `127.0.0.1` | 讓 Proof Server 只留在容器內 |
+| Proof port | `18801` | 內部連接埠，不要新增 Host Port |
+| Extra Parameters | `--init` | 讓容器使用 init process 管理子程序 |
+
+Cookie Path 與 Mint ledger Path 需要使用 Unraid 的 `/mnt/user/appdata`，不要把它們留在容器內的匿名層。這樣更新 image 或刪除重建 container 時，資料仍然保留。
+
+### 7.4 用 Unraid Web Command Line 產生 RELAY_API_KEY
+
+在 Unraid WebGUI 開啟 Terminal，或使用 Unraid 的 Web Command Line，執行：
+
+```bash
+openssl rand -hex 32
+```
+
+畫面會輸出一組 64 字元的十六進位字串，例如：
+
+```text
+f1e2d3c4b5a697887766554433221100aabbccddeeff00112233445566778899
+```
+
+使用你實際產生的值，不要使用上面的示例。複製輸出後，貼到 Template 的 **Relay API key** 欄位。這個值只需要放在 Unraid 的容器設定中，不需要寫入 Dockerfile、GitHub repository 或 Caddyfile。
+
+如果想讓 command history 不包含變數名稱以外的內容，可以使用：
+
+```bash
+KEY="$(openssl rand -hex 32)"; printf '%s\n' "$KEY"
+```
+
+Terminal 會顯示產生的值，複製它後再清除或關閉該 Terminal 視窗。不要把 API Key 貼到聊天、Issue、截圖或公開日誌。
+
+### 7.5 按 Apply 後怎麼確認
+
+1. 按 **Apply**。
+2. 等待 Unraid 拉取 image 並建立 container。
+3. 在 Docker 頁面確認容器狀態為 Started 或 Healthy。
+4. 點容器圖示，開啟 **Logs**。
+5. 看到以下類似訊息代表兩個程序都已啟動：
+
+   ```text
+   [WAA Proof Server] Listening on http://127.0.0.1:18801
+   [Relay Gateway] Dashboard: http://0.0.0.0:18802/
+   [Relay Gateway] OpenAI Base: http://0.0.0.0:18802/v1
+   ```
+
+6. 按 WebUI，或直接開啟 `http://<Unraid-IP>:18802/`。
+7. 使用 `RELAY_API_KEY` 登入面板。
+8. 匯入自己的 AI Studio Cookie。
+
+### 7.6 XML 更新和 image 更新的差別
+
+- **image 更新**：GitHub Actions 發布新的 `latest` digest，Unraid Docker 更新檢查會發現新 image，按 Update 即可。
+- **XML 更新**：Template repository 的 XML 欄位有變更時，先重新整理 Template Repository，再在 Add Container 或 Edit 頁面載入新欄位。
+- **既有容器設定**：Unraid 會使用你最後按 Apply 保存的設定。更新 image 不會覆蓋 appdata Path，也不會重新產生 API Key。
+
+### 7.7 回復舊 image
+
+如果最新 image 發生問題，在 Docker WebGUI 編輯容器，把 Repository 暫時改成固定 tag，例如：
+
+```text
+ghcr.io/poropsk/aistudio-pg-bridge:sha-72b2237
+```
+
+按 Apply 後，Unraid 會用該版本重新建立容器。確認問題排除後，再改回：
+
+```text
+ghcr.io/poropsk/aistudio-pg-bridge:latest
+```
