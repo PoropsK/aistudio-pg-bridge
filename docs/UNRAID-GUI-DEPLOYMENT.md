@@ -245,3 +245,104 @@ ghcr.io/poropsk/aistudio-pg-bridge:sha-72b2237
 ```text
 ghcr.io/poropsk/aistudio-pg-bridge:latest
 ```
+
+## 8. Caddy 與其他專案串接
+
+### 8.1 Caddy site block
+
+如果 Caddy 在 Unraid host 或 host network，使用：
+
+```caddyfile
+ai.example.com {
+    reverse_proxy 127.0.0.1:18802 {
+        flush_interval -1
+    }
+}
+```
+
+如果 Caddy 是另一個 Docker container，使用 Unraid LAN IP：
+
+```caddyfile
+ai.example.com {
+    reverse_proxy 192.168.1.10:18802 {
+        flush_interval -1
+    }
+}
+```
+
+把 `ai.example.com` 換成你的網域，把 `192.168.1.10` 換成 Unraid LAN IP。DNS A/AAAA 記錄指向家中公網 IP，路由器將 TCP 80 和 443 轉發到 Caddy。Caddy 會處理 HTTPS 憑證與續期。`flush_interval -1` 用於低延遲 SSE 串流。[Caddy reverse_proxy](https://caddyserver.com/docs/caddyfile/directives/reverse_proxy)
+
+不要把 Unraid 的 `18802` 直接轉發到 WAN，也不要公開 Proof Server 的 `18801`。
+
+### 8.2 第一次使用 Relay
+
+1. 開啟 `https://ai.example.com/`。
+2. 使用 `RELAY_API_KEY` 登入面板。
+3. 使用上游 Tampermonkey 腳本從 AI Studio 匯出自己的 Cookie。
+4. 在面板匯入 Cookie。
+5. 確認帳號狀態可用後再測試 API。
+
+### 8.3 OpenAI 相容串接
+
+Relay 的 Base URL 是：
+
+```text
+https://ai.example.com/v1
+```
+
+用 curl 測試 SSE：
+
+```bash
+curl -N https://ai.example.com/v1/chat/completions \
+  -H 'Content-Type: application/json' \
+  -H 'Authorization: Bearer <你的_RELAY_API_KEY>' \
+  -d '{
+    "model": "gemini-3.8-flash",
+    "stream": true,
+    "messages": [
+      {"role": "user", "content": "請回覆部署測試成功"}
+    ]
+  }'
+```
+
+OpenAI SDK 的設定概念如下：
+
+```js
+import OpenAI from 'openai';
+
+const client = new OpenAI({
+  baseURL: 'https://ai.example.com/v1',
+  apiKey: process.env.RELAY_API_KEY,
+});
+```
+
+### 8.4 Gemini 相容串接
+
+Gemini 格式端點：
+
+```text
+POST https://ai.example.com/v1beta/models/gemini-3.8-flash:generateContent
+```
+
+串流端點：
+
+```text
+POST https://ai.example.com/v1beta/models/gemini-3.8-flash:streamGenerateContent
+```
+
+### 8.5 串接其他專案時要填的三個值
+
+| 專案設定 | 值 |
+|---|---|
+| API Base URL | `https://ai.example.com/v1` |
+| API Key | `RELAY_API_KEY` 的值 |
+| Model | `gemini-3.8-flash` 或面板可用的模型 |
+
+其他專案如果要求 OpenAI Compatible、Custom OpenAI Endpoint 或 Base URL，就使用這三個值。API Key 放在該專案的環境變數或 Secret 設定，不要寫入前端程式碼或 Git。
+
+### 8.6 常見錯誤
+
+- `502`：Caddy 無法連到 `18802`，先確認 Caddy 是 host network、使用 Unraid LAN IP，或與 Relay 位於同一 Docker network。
+- `401`：API Key 錯誤，或 AI Studio Cookie 已失效。
+- `429` 或 `5xx`：Relay 可能正在切換帳號或上游暫時失敗，先查看 Docker Logs 和面板帳號狀態。
+- 沒有逐段串流：確認 Caddy 保留 `flush_interval -1`，並用 `curl -N` 測試。
