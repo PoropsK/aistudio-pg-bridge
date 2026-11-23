@@ -8,6 +8,8 @@
 
    `https://github.com/PoropsK/aistudio-pg-bridge`
 
+GitHub Actions 會發布 `linux/amd64` 與 `linux/arm64` 兩個架構，Unraid 會依主機架構自動拉取對應 image。
+
 4. 在 Docker → Add Container 選擇 **AI Studio PG Bridge**。
 5. 設定 `Relay API key`，並確認兩個路徑：
 
