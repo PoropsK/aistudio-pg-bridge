@@ -1,0 +1,9 @@
+.git
+.env
+2-relay-client-gateway/.env
+2-relay-client-gateway/cookies
+3-waa-proof-server/data
+node_modules
+tmp
+*.log
+

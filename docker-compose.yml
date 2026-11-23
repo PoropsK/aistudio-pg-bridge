@@ -1,0 +1,32 @@
+services:
+  relay:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: aistudio-pg-bridge
+    restart: unless-stopped
+    init: true
+    env_file:
+      - .env
+    ports:
+      # Caddy 在 Unraid host 上時使用這行。Caddy 容器模式請看報告第 6.2 節。
+      - "127.0.0.1:18802:18802"
+    volumes:
+      - ./2-relay-client-gateway/cookies:/app/2-relay-client-gateway/cookies
+      - ./3-waa-proof-server/data:/app/3-waa-proof-server/data
+    healthcheck:
+      test:
+        - CMD
+        - node
+        - -e
+        - >-
+          fetch('http://127.0.0.1:18802/health')
+          .then(r => process.exit(r.ok ? 0 : 1))
+          .catch(() => process.exit(1))
+      interval: 30s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+    security_opt:
+      - no-new-privileges:true
+

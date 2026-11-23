@@ -1,5 +1,16 @@
 # AI Studio WAA Proof & Relay Suite
 
+## Unraid Docker WebGUI deployment
+
+This fork includes a Dockerfile, a GitHub Actions workflow that publishes `ghcr.io/PoropsK/aistudio-pg-bridge:latest`, and an Unraid XML template under `templates/aistudio-pg-bridge.xml`.
+
+The Unraid installation flow is GUI-first. Add `https://github.com/PoropsK/aistudio-pg-bridge` to Docker Repositories, choose **AI Studio PG Bridge** from the Add Container template list, set the API key and appdata paths, then apply. Keep the GHCR package public so Unraid can pull it without registry credentials.
+
+The Relay and Proof Server run together in one container. Only port `18802` is published. Mount `/mnt/user/appdata/aistudio-pg-bridge/cookies` to `/app/2-relay-client-gateway/cookies` and `/mnt/user/appdata/aistudio-pg-bridge/data` to `/app/3-waa-proof-server/data`.
+
+Detailed GUI instructions are in [`docs/UNRAID-GUI-DEPLOYMENT.md`](docs/UNRAID-GUI-DEPLOYMENT.md).
+
+
 本项目按职责拆分为三个独立文件夹，全部默认运行于本地端口（无需公网暴露；中转端导入的 Cookie 持久化到 `2-relay-client-gateway/cookies/`，签名端内存池保持零落盘）：
 
 ```text

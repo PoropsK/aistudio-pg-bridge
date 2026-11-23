@@ -1,0 +1,9 @@
+ai.example.com {
+    encode gzip
+
+    reverse_proxy 127.0.0.1:18802 {
+        # 低延遲轉送 SSE。Relay 也會回傳 text/event-stream。
+        flush_interval -1
+    }
+}
+

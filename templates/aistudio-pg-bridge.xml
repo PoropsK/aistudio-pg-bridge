@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Container version="2">
+  <Name>AI Studio PG Bridge</Name>
+  <Repository>ghcr.io/PoropsK/aistudio-pg-bridge:latest</Repository>
+  <Registry>https://ghcr.io</Registry>
+  <Network>bridge</Network>
+  <MyIP/>
+  <Shell>bash</Shell>
+  <Privileged>false</Privileged>
+  <Support>https://github.com/PoropsK/aistudio-pg-bridge/issues</Support>
+  <Project>https://github.com/PoropsK/aistudio-pg-bridge</Project>
+  <TemplateURL>https://raw.githubusercontent.com/PoropsK/aistudio-pg-bridge/main/templates/aistudio-pg-bridge.xml</TemplateURL>
+  <Overview>OpenAI and Gemini compatible AI Studio relay gateway with a local proof server.</Overview>
+  <Description>
+    The relay gateway and proof server run in one container. Cookie files and the mint ledger are stored in appdata. Only the relay port is published. Add this repository URL to Unraid Docker Repositories.
+  </Description>
+  <Category>Network:Web</Category>
+  <WebUI>http://[IP]:[PORT:18802]/</WebUI>
+  <ExtraParams>--init</ExtraParams>
+  <Config Name="Relay Web/API port" Target="18802" Default="18802" Mode="tcp" Description="Relay dashboard and OpenAI/Gemini compatible API port. Point Caddy to this host port." Type="Port" Display="always" Required="true" Mask="false">18802</Config>
+  <Config Name="Cookie data" Target="/app/2-relay-client-gateway/cookies" Default="/mnt/user/appdata/aistudio-pg-bridge/cookies" Mode="rw" Description="Persistent Google AI Studio cookie account files. Treat this directory as secret data." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/aistudio-pg-bridge/cookies</Config>
+  <Config Name="Mint ledger data" Target="/app/3-waa-proof-server/data" Default="/mnt/user/appdata/aistudio-pg-bridge/data" Mode="rw" Description="Persistent 24-hour proof mint ledger." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/aistudio-pg-bridge/data</Config>
+  <Config Name="Relay API key" Target="RELAY_API_KEY" Default="" Mode="" Description="Required key for dashboard login and API Bearer authentication. Generate a long random value and keep it private." Type="Variable" Display="always" Required="true" Mask="true"></Config>
+  <Config Name="Relay host" Target="RELAY_HOST" Default="0.0.0.0" Mode="" Description="Listen on all container interfaces so Docker can publish the port." Type="Variable" Display="advanced-hide" Required="true" Mask="false">0.0.0.0</Config>
+  <Config Name="Default model" Target="DEFAULT_MODEL" Default="gemini-3.8-flash" Mode="" Description="Model used when an API request does not specify one." Type="Variable" Display="advanced" Required="true" Mask="false">gemini-3.8-flash</Config>
+  <Config Name="Cookie directory" Target="COOKIES_DIR" Default="./cookies" Mode="" Description="Relative to the relay project directory inside the image." Type="Variable" Display="advanced-hide" Required="true" Mask="false">./cookies</Config>
+  <Config Name="Auto start proof server" Target="AUTO_START_PROOF" Default="1" Mode="" Description="Start the local proof server as a child process." Type="Variable" Display="advanced-hide" Required="true" Mask="false">1</Config>
+  <Config Name="Proof host" Target="PROOF_HOST" Default="127.0.0.1" Mode="" Description="Proof server stays private inside the container." Type="Variable" Display="advanced-hide" Required="true" Mask="false">127.0.0.1</Config>
+  <Config Name="Proof port" Target="PROOF_PORT" Default="18801" Mode="" Description="Internal proof server port. Do not publish this port." Type="Variable" Display="advanced-hide" Required="true" Mask="false">18801</Config>
+  <Config Name="Mint ledger file" Target="MINT_LEDGER_FILE" Default="/app/3-waa-proof-server/data/mint-ledger.log" Mode="" Description="Path for the proof mint ledger inside the mounted data directory." Type="Variable" Display="advanced-hide" Required="true" Mask="false">/app/3-waa-proof-server/data/mint-ledger.log</Config>
+</Container>
+
