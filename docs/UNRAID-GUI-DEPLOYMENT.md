@@ -116,7 +116,7 @@ ai.example.com {
 
 ## 6. XML Template 的位置
 
-`templates/aistudio-pg-bridge.xml` 可以讓 Unraid 預填上述欄位。使用它需要把 GitHub repository 加入 Docker Repositories。這是捷徑，不是必要依賴。直接 Add Container 手動輸入時，容器啟動與更新方式相同。
+`templates/aistudio-pg-bridge.xml` 可以讓 Unraid 預填上述欄位。你目前的 Unraid 版本不需要、也通常沒有舊式的 GitHub Template Repository 入口。直接 Add Container 手動輸入時，容器啟動與更新方式相同。
 
 ## 7. XML Template 詳細使用教學
 
@@ -135,24 +135,29 @@ XML Template 是 Unraid Docker WebGUI 的表單描述檔。它會預先填入：
 
 按 Apply 之後，Unraid 仍然建立一般 Docker container，並把最後使用的設定保存到自己的 Docker template。日後你可以在 Docker 頁面按容器圖示，再使用 Edit、Logs、Restart、Update。
 
-### 7.2 使用 GitHub Template Repository 加入 XML
+### 7.2 將 XML 放入 Unraid 的 User Templates
 
-這是最方便的 XML 使用方式：
+Unraid 6.10 起已移除舊式 Template Repositories。官方與論壇建議把 XML 放入 flash 的：
 
-1. 登入 Unraid WebGUI。
-2. 開啟 **Apps**。
-3. 找到 **Docker Repositories** 或 Template repositories 設定。
-4. 新增：
+```text
+/config/plugins/dockerMan/templates-user/
+```
 
-   ```text
-   https://github.com/PoropsK/aistudio-pg-bridge
-   ```
+在 macOS Finder 可以使用 SMB 開啟 Unraid 的 `flash` share，進入：
 
-5. 儲存並重新整理。
-6. 開啟 **Docker → Add Container**。
-7. 在 Template 下拉選單選擇 **AI Studio PG Bridge**。
+```text
+config/plugins/dockerMan/templates-user/
+```
 
-Unraid 會從 repository 的 `templates/aistudio-pg-bridge.xml` 載入預填欄位。Template 內的 image 已經指向：
+把 fork 裡的 `templates/aistudio-pg-bridge.xml` 下載後放入這個資料夾。完成後：
+
+1. 開啟 **Docker → Add Container**。
+2. 在 Template 下拉選單選擇 **AI Studio PG Bridge**。
+3. 檢查 Port、Path、Environment Variables。
+4. 填入 `RELAY_API_KEY`。
+5. 按 **Apply**。
+
+Template 內的 image 已經指向：
 
 ```text
 ghcr.io/poropsk/aistudio-pg-bridge:latest
@@ -224,7 +229,7 @@ Terminal 會顯示產生的值，複製它後再清除或關閉該 Terminal 視�
 ### 7.6 XML 更新和 image 更新的差別
 
 - **image 更新**：GitHub Actions 發布新的 `latest` digest，Unraid Docker 更新檢查會發現新 image，按 Update 即可。
-- **XML 更新**：Template repository 的 XML 欄位有變更時，先重新整理 Template Repository，再在 Add Container 或 Edit 頁面載入新欄位。
+- **XML 更新**：下載新版 XML 覆蓋 `templates-user` 裡的檔案，再從 Add Container 載入新版欄位。已建立的容器仍以最後一次 Apply 保存的設定為準。
 - **既有容器設定**：Unraid 會使用你最後按 Apply 保存的設定。更新 image 不會覆蓋 appdata Path，也不會重新產生 API Key。
 
 ### 7.7 回復舊 image
