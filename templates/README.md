@@ -5,7 +5,7 @@
 Template 會拉取：
 
 ```text
-ghcr.io/PoropsK/aistudio-pg-bridge:latest
+ghcr.io/poropsk/aistudio-pg-bridge:latest
 ```
 
 請先確認 GitHub Packages 的 image visibility 是 Public，否則 Unraid 還需要額外設定 GHCR Registry 登入資訊。

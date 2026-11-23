@@ -2,7 +2,7 @@
 
 ## Unraid Docker WebGUI deployment
 
-This fork includes a Dockerfile, a GitHub Actions workflow that publishes `ghcr.io/PoropsK/aistudio-pg-bridge:latest`, and an optional Unraid XML template under `templates/aistudio-pg-bridge.xml`.
+This fork includes a Dockerfile, a GitHub Actions workflow that publishes `ghcr.io/poropsk/aistudio-pg-bridge:latest`, and an optional Unraid XML template under `templates/aistudio-pg-bridge.xml`.
 
 The primary Unraid installation flow is direct WebGUI entry. Open **Docker → Add Container**, set the Repository to `ghcr.io/poropsk/aistudio-pg-bridge:latest`, add the port, paths, and environment variables listed in [`docs/UNRAID-GUI-DEPLOYMENT.md`](docs/UNRAID-GUI-DEPLOYMENT.md), then apply. The XML file is only a prefilled shortcut if you want one. Keep the GHCR package public so Unraid can pull it without registry credentials.
 
